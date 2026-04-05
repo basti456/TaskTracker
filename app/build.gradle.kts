@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.room.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -10,6 +12,8 @@ android {
             minorApiLevel = 1
         }
     }
+
+
 
     defaultConfig {
         applicationId = "com.example.tasktraker"
@@ -38,7 +42,9 @@ android {
         compose = true
     }
 }
-
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -50,6 +56,18 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    //Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+
+
+    //Koin
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.compose.viewmodel)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
