@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.tasktraker.navigation.NavigationRoot
 import com.example.tasktraker.screens.AddTaskScreen
 import com.example.tasktraker.screens.TaskScreen
 import com.example.tasktraker.ui.theme.TaskTrakerTheme
@@ -21,7 +22,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TaskTrakerTheme {
-                AddTaskScreen()
+                Scaffold { innerPadding ->
+                    NavigationRoot(modifier = Modifier.padding(innerPadding))
+                }
+
             }
         }
     }

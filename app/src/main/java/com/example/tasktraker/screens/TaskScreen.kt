@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +35,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -47,6 +53,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.tasktraker.models.Task
+import com.example.tasktraker.models.TaskCategory
+import com.example.tasktraker.models.TaskPriority
 import com.example.tasktraker.ui.theme.BackgroundLight
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
@@ -159,7 +168,11 @@ fun TaskScreen() {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                item {
+                    TaskCard {
 
+                    }
+                }
             }
         }
     }
@@ -188,5 +201,47 @@ fun ChipButton(
                 )
             )
         }
+    }
+}
+
+@Composable
+fun TaskCard(onDelete: () -> Unit) {
+    val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
+        confirmValueChange = {
+            if (it == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+    SwipeToDismissBox(
+        state = swipeToDismissBoxState,
+        modifier = Modifier.fillMaxWidth(),
+        backgroundContent = {
+
+        },
+
+        ) {
+        TaskItem(
+            task = com.example.tasktraker.databases.entity.Task(
+                id = 0,
+                taskName = "Work on Kotlin",
+                taskDescription = "I have to do too much work on kotlin and will do it by today",
+                category = TaskCategory.WORK,
+                dueDate = "28 Mar 2018",
+                isRemindMe = 1,
+                fileName = "Task",
+                fileLocation = "task/hello",
+                priority = TaskPriority.MEDIUM
+            ),
+            onTaskItemClick = {
+
+            },
+            onTaskCheckClick = {
+
+            }
+        )
     }
 }
