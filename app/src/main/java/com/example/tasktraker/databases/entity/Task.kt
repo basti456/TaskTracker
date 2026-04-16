@@ -5,10 +5,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.models.TaskPriority
-
+import com.example.tasktraker.models.Task
 
 @Entity(tableName = "Task")
-data class Task(
+data class TaskEntity(
     @ColumnInfo(name = "Id")
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -36,4 +36,28 @@ data class Task(
 
     @ColumnInfo(name = "FileLocation")
     val fileLocation: String = ""
+)
+
+fun TaskEntity.toDomain(): Task = Task(
+    id = id,
+    taskName = taskName,
+    taskDescription = taskDescription,
+    category = category,
+    dueDate = dueDate,
+    isRemindMe = isRemindMe,
+    priority = priority,
+    fileName = fileName,
+    fileLocation = fileLocation
+)
+
+fun Task.toEntity(): TaskEntity = TaskEntity(
+    id = id,
+    taskName = taskName,
+    taskDescription = taskDescription,
+    category = category,
+    dueDate = dueDate,
+    isRemindMe = isRemindMe,
+    priority = priority,
+    fileName = fileName,
+    fileLocation = fileLocation
 )

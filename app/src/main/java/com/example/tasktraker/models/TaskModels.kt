@@ -22,9 +22,10 @@ data class Task(
     val id: Long,
     val taskName: String,
     val taskDescription: String,
-    val category: String,
+    val category: TaskCategory,
     val dueDate: String,
     val isRemindMe: Int,
+    val priority: TaskPriority,
     val fileName: String,
     val fileLocation: String
 )

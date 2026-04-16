@@ -5,22 +5,26 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.example.tasktraker.databases.entity.Task
+import com.example.tasktraker.databases.entity.TaskEntity
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface TaskDao {
 
     @Insert
-    suspend fun insertTask(task: Task)
+    suspend fun insertTask(task: TaskEntity)
 
     @Update
-    suspend fun updateTask(task: Task)
+    suspend fun updateTask(task: TaskEntity)
 
     @Delete
-    suspend fun deleteTask(task: Task)
+    suspend fun deleteTask(task: TaskEntity)
 
     @Query("Select * from task")
-    suspend fun getAllTasks(): List<Task>
+    fun getAllTasks(): Flow<List<TaskEntity>>
+
+    @Query("Select * from task where id = :id")
+    suspend fun getTaskById(id: Long)
 
 }
