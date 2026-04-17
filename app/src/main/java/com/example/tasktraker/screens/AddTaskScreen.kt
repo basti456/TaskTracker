@@ -50,6 +50,8 @@ import com.example.tasktraker.ui.theme.BackgroundLight
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
+import com.example.tasktraker.viewModels.AddEditTaskViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 enum class Categories(val title: String) {
     WORK("Work"),
@@ -60,7 +62,10 @@ enum class Categories(val title: String) {
 }
 
 @Composable
-fun AddTaskScreen() {
+fun AddTaskScreen(
+    taskId: Long = -1L,
+    viewModel: AddEditTaskViewModel = koinViewModel()
+) {
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
     var isRemindMeChecked by remember {
@@ -190,22 +195,28 @@ fun AddTaskScreen() {
                     )
                 )
                 Surface(
-                    modifier = Modifier.fillMaxWidth().size(60.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(60.dp),
                     color = BackgroundLight,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement =  Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        PriorityButton("Low",true, modifier = Modifier.weight(1f))
-                        PriorityButton("Medium",false,modifier = Modifier.weight(1f))
-                        PriorityButton("High",false,modifier = Modifier.weight(1f))
+                        PriorityButton("Low", true, modifier = Modifier.weight(1f))
+                        PriorityButton("Medium", false, modifier = Modifier.weight(1f))
+                        PriorityButton("High", false, modifier = Modifier.weight(1f))
                     }
                 }
             }
-            Row(verticalAlignment = Alignment.CenterVertically){
-                Icon(Icons.Outlined.AttachFile, tint = TextPrimary.copy(alpha = 0.5f), contentDescription = "Attachment")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.AttachFile,
+                    tint = TextPrimary.copy(alpha = 0.5f),
+                    contentDescription = "Attachment"
+                )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     "Add Attachment",
@@ -215,12 +226,14 @@ fun AddTaskScreen() {
                 )
             }
             Surface(
-                modifier = Modifier.fillMaxWidth().size(60.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(60.dp),
                 color = TextSecondary,
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
-                    Row(verticalAlignment = Alignment.CenterVertically){
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Save Task")
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.Default.ArrowForward, contentDescription = "")
@@ -332,7 +345,9 @@ fun PriorityButton(
         color = if (isSelected) BluePrimary else Color.White,
         shape = RoundedCornerShape(12.dp),
         border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
-        modifier = modifier.height(40.dp).padding(horizontal = 4.dp)
+        modifier = modifier
+            .height(40.dp)
+            .padding(horizontal = 4.dp)
     ) {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp),

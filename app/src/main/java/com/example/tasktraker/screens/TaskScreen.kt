@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,8 +22,7 @@ import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,15 +30,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,12 +51,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tasktraker.models.Task
-import com.example.tasktraker.models.TaskCategory
-import com.example.tasktraker.models.TaskPriority
-import com.example.tasktraker.ui.theme.BackgroundLight
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
+import com.example.tasktraker.viewModels.TaskUIState
+import com.example.tasktraker.viewModels.TaskViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 
 enum class Destination(
@@ -73,7 +70,12 @@ enum class Destination(
 }
 
 @Composable
-fun TaskScreen() {
+fun TaskScreen(
+    viewModel: TaskViewModel = koinViewModel(),
+    onTaskItemClicked: (Long) -> Unit,
+    onAddTaskClicked: () -> Unit
+) {
+    val taskUIState by viewModel.uiState.collectAsState()
     val startDestination = Destination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
     var searchText by remember { mutableStateOf("") }
@@ -99,7 +101,7 @@ fun TaskScreen() {
         }
     }, floatingActionButton = {
         FloatingActionButton(
-            onClick = {},
+            onClick = onAddTaskClicked,
             contentColor = Color.White,
             shape = CircleShape,
             containerColor = Color(0xFF4A80F0),
@@ -165,15 +167,37 @@ fun TaskScreen() {
                     ChipButton(chips[index], true)
                 }
             }
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                item {
-                    TaskCard {
+            when (val state = taskUIState) {
+                is TaskUIState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
 
+                is TaskUIState.Empty -> {
+
+                }
+
+                is TaskUIState.Error -> {
+
+                }
+
+                is TaskUIState.Success -> {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(state.tasks) { task ->
+                            TaskCard(
+                                task = task,
+                                onDelete = { viewModel.deleteTask(task) },
+                                onTaskItemClicked = { onTaskItemClicked(task.id) },
+                                onTaskCheckboxClicked = { viewModel.toggleTaskCompletion(task) }
+                            )
+                        }
                     }
                 }
             }
+
         }
     }
 }
@@ -205,7 +229,12 @@ fun ChipButton(
 }
 
 @Composable
-fun TaskCard(onDelete: () -> Unit) {
+fun TaskCard(
+    task: Task,
+    onDelete: () -> Unit,
+    onTaskItemClicked: (Task) -> Unit,
+    onTaskCheckboxClicked: (Task) -> Unit
+) {
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
             if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -225,22 +254,11 @@ fun TaskCard(onDelete: () -> Unit) {
 
         ) {
         TaskItem(
-            task = com.example.tasktraker.databases.entity.Task(
-                id = 0,
-                taskName = "Work on Kotlin",
-                taskDescription = "I have to do too much work on kotlin and will do it by today",
-                category = TaskCategory.WORK,
-                dueDate = "28 Mar 2018",
-                isRemindMe = 1,
-                fileName = "Task",
-                fileLocation = "task/hello",
-                priority = TaskPriority.MEDIUM
-            ),
-            onTaskItemClick = {
-
-            },
+            task = task,
+            onTaskItemClick =
+                { onTaskItemClicked(task) },
             onTaskCheckClick = {
-
+                onTaskCheckboxClicked(task)
             }
         )
     }

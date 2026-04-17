@@ -2,6 +2,7 @@ package com.example.tasktraker.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tasktraker.databases.entity.toEntity
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.repository.TaskRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed class TaskUIState {
     object Loading : TaskUIState()
@@ -34,5 +36,17 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
             initialValue = TaskUIState.Loading
         )
 
+    fun toggleTaskCompletion(task: Task) {
+        viewModelScope.launch {
+            repository.updateTask(task.copy(isCompleted = !(task.isCompleted)))
+        }
+    }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            repository.deleteTask(task)
+        }
+
+    }
 
 }

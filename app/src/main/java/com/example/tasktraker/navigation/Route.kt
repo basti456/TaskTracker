@@ -10,5 +10,5 @@ sealed interface Route : NavKey {
     data object TaskList : Route
 
     @Serializable
-    data class TaskDetail(val taskId: String) : Route
+    data class TaskDetail(val taskId: Long) : Route
 }

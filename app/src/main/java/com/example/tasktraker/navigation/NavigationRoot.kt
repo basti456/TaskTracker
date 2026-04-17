@@ -11,7 +11,6 @@ import com.example.tasktraker.screens.AddTaskScreen
 import com.example.tasktraker.screens.TaskScreen
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 @Composable
 fun NavigationRoot(modifier: Modifier) {
@@ -34,7 +33,14 @@ fun NavigationRoot(modifier: Modifier) {
             when (key) {
                 is Route.TaskList -> {
                     NavEntry(key) {
-                        TaskScreen()
+                        TaskScreen(
+                            onTaskItemClicked = { taskId ->
+                                backStack.add(Route.TaskDetail(taskId))
+                            },
+                            onAddTaskClicked = {
+                                backStack.add(Route.TaskDetail(-1L))
+                            }
+                        )
                     }
                 }
 

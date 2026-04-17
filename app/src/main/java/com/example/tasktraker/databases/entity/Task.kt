@@ -23,13 +23,16 @@ data class TaskEntity(
     val category: TaskCategory,
 
     @ColumnInfo("DueDate")
-    val dueDate: String,
+    val dueDate: Long,
 
     @ColumnInfo(name = "IsRemindMe")
     val isRemindMe: Int,
 
     @ColumnInfo(name = "Priority")
     val priority: TaskPriority,
+
+    @ColumnInfo(name = "IsCompleted")
+    val isCompleted: Boolean = false,
 
     @ColumnInfo(name = "FileName")
     val fileName: String = "",
@@ -46,6 +49,7 @@ fun TaskEntity.toDomain(): Task = Task(
     dueDate = dueDate,
     isRemindMe = isRemindMe,
     priority = priority,
+    isCompleted = isCompleted,
     fileName = fileName,
     fileLocation = fileLocation
 )
@@ -58,6 +62,7 @@ fun Task.toEntity(): TaskEntity = TaskEntity(
     dueDate = dueDate,
     isRemindMe = isRemindMe,
     priority = priority,
+    isCompleted = isCompleted,
     fileName = fileName,
     fileLocation = fileLocation
 )
