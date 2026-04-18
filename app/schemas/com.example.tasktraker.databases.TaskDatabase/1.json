@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "504cf363516de90df478958d2af05eef",
+    "identityHash": "eb81b8232f5a73a682be406977125a33",
     "entities": [
       {
         "tableName": "Task",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`Id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `TaskName` TEXT NOT NULL, `TaskDescription` TEXT NOT NULL, `Category` TEXT NOT NULL, `DueDate` TEXT NOT NULL, `IsRemindMe` INTEGER NOT NULL, `Priority` TEXT NOT NULL, `FileName` TEXT NOT NULL, `FileLocation` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`Id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `TaskName` TEXT NOT NULL, `TaskDescription` TEXT NOT NULL, `Category` TEXT NOT NULL, `DueDate` INTEGER NOT NULL, `IsRemindMe` INTEGER NOT NULL, `Priority` TEXT NOT NULL, `IsCompleted` INTEGER NOT NULL, `FileName` TEXT NOT NULL, `FileLocation` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,7 +35,7 @@
           {
             "fieldPath": "dueDate",
             "columnName": "DueDate",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -48,6 +48,12 @@
             "fieldPath": "priority",
             "columnName": "Priority",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCompleted",
+            "columnName": "IsCompleted",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -73,7 +79,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '504cf363516de90df478958d2af05eef')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eb81b8232f5a73a682be406977125a33')"
     ]
   }
 }

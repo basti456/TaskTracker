@@ -89,7 +89,7 @@ fun TaskItem(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.AccessTime, "")
                         Text(
-                            task.dueDate,
+                            task.dueDate.toString(),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextSecondary.copy(alpha = 0.5f)
                             )
