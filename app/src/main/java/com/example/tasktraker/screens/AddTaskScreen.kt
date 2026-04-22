@@ -18,10 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.FormatListBulleted
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.Notifications
@@ -36,6 +34,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,13 +63,16 @@ enum class Categories(val title: String) {
 @Composable
 fun AddTaskScreen(
     taskId: Long = -1L,
-    viewModel: AddEditTaskViewModel = koinViewModel()
+    viewModel: AddEditTaskViewModel = koinViewModel(),
+    navigateToTaskScreen: () -> Unit
 ) {
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
     var isRemindMeChecked by remember {
         mutableStateOf(false)
     }
+    val isTaskEdit = taskId == -1L
+    val addEditUIState by viewModel.addEditTaskUIState.collectAsState()
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -82,16 +84,36 @@ fun AddTaskScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Cancel",
+                TextButton(
+                    onClick = {
+                        navigateToTaskScreen()
+                    },
                     modifier = Modifier.align(Alignment.CenterStart),
-                    style = MaterialTheme.typography.labelLarge.copy(color = TextPrimary)
-                )
+                ) {
+                    Text(
+                        "Cancel",
+                        style = MaterialTheme.typography.labelLarge.copy(color = TextPrimary)
+                    )
+                }
+
                 Text(
-                    "New Task",
+                    if (isTaskEdit) "Edit Task" else "New Task",
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.headlineMedium.copy(color = TextPrimary)
                 )
+                if (isTaskEdit) {
+                    TextButton(
+                        onClick = {
+                            navigateToTaskScreen()
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                    ) {
+                        Text(
+                            "Save",
+                            style = MaterialTheme.typography.labelLarge.copy(color = TextPrimary)
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
             Column(
@@ -234,7 +256,19 @@ fun AddTaskScreen(
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Save Task")
+
+                        if (isTaskEdit) TextButton(
+                            onClick = {
+                                viewModel.deleteTask(task)
+                            }
+                        ) { Text("Delete Task") }
+                        else TextButton(onClick = {
+
+                        }) {
+                            Text(
+                                "Save Task"
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(Icons.Default.ArrowForward, contentDescription = "")
                     }

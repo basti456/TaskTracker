@@ -1,20 +1,30 @@
 package com.example.tasktraker.viewModels
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tasktraker.models.AddEditTaskModal
+import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.models.TaskPriority
 import com.example.tasktraker.repository.TaskRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+sealed class SaveDeleteTaskUIEvent {
+    object NavigateBack : SaveDeleteTaskUIEvent()
+    data class Error(val message: String) : SaveDeleteTaskUIEvent()
+}
 
 class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     private val _addEditTaskUIState = MutableStateFlow(AddEditTaskModal())
     val addEditTaskUIState = _addEditTaskUIState.asStateFlow()
+
+    private val _saveDeleteTaskEvent = MutableSharedFlow<SaveDeleteTaskUIEvent>()
+    val saveDeleteTaskEvent = _saveDeleteTaskEvent.asSharedFlow()
 
     fun onTaskNameUpdate(taskName: String) {
         _addEditTaskUIState.value = _addEditTaskUIState.value.copy(taskName = taskName)
@@ -62,6 +72,40 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
 
     fun saveTask() {
         viewModelScope.launch {
+            val state = _addEditTaskUIState.value
+            val task = Task(
+                id = state.id ?: 0,
+                taskName = state.taskName,
+                taskDescription = state.taskDescription,
+                category = state.category,
+                dueDate = state.dueDate,
+                isRemindMe = state.isRemindMe,
+                priority = state.priority,
+                isCompleted = state.isCompleted,
+                fileName = state.fileName,
+                fileLocation = state.fileLocation
+            )
+            try {
+                if (state.id == null) {
+                    repository.insertTask(task)
+                } else {
+                    repository.updateTask(task)
+                }
+                _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.NavigateBack)
+            } catch (e: Exception) {
+                _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.Error("Something went wrong. Try Again ${e.message}"))
+            }
+        }
+    }
+
+    fun deleteTask(task: Task) {
+        viewModelScope.launch {
+            try {
+                repository.deleteTask(task)
+                _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.NavigateBack)
+            } catch (e: Exception) {
+                _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.Error("Something went wrong. Try Again ${e.message}"))
+            }
         }
     }
 }
