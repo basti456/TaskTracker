@@ -57,6 +57,8 @@ import com.example.tasktraker.ui.theme.TextSecondary
 import com.example.tasktraker.viewModels.TaskUIState
 import com.example.tasktraker.viewModels.TaskViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 enum class Destination(
@@ -124,7 +126,7 @@ fun TaskScreen(
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        "Wednesday, Mar18",
+                        SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(System.currentTimeMillis()),
                         style = MaterialTheme.typography.labelMedium.copy(color = TextSecondary)
                     )
                     Text(

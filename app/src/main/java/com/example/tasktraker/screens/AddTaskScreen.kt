@@ -1,6 +1,8 @@
 package com.example.tasktraker.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,13 +19,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.outlined.AttachFile
-import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -33,7 +38,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,36 +50,78 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.tasktraker.models.Task
+import com.example.tasktraker.models.TaskCategory
+import com.example.tasktraker.models.TaskPriority
 import com.example.tasktraker.ui.theme.BackgroundLight
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
 import com.example.tasktraker.viewModels.AddEditTaskViewModel
+import com.example.tasktraker.viewModels.SaveDeleteTaskUIEvent
+import kotlinx.coroutines.flow.collect
 import org.koin.compose.viewmodel.koinViewModel
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-enum class Categories(val title: String) {
-    WORK("Work"),
-    PERSONAL("Personal"),
-    SHOPPING("Shopping"),
-    HEALTH("Health"),
-    OTHER("Other")
-}
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
     taskId: Long = -1L,
     viewModel: AddEditTaskViewModel = koinViewModel(),
     navigateToTaskScreen: () -> Unit
 ) {
-    var taskName by remember { mutableStateOf("") }
-    var taskDescription by remember { mutableStateOf("") }
-    var isRemindMeChecked by remember {
-        mutableStateOf(false)
-    }
-    val isTaskEdit = taskId == -1L
+    val isTaskEdit = taskId != -1L
     val addEditUIState by viewModel.addEditTaskUIState.collectAsState()
+    val datePickerState =
+        rememberDatePickerState(initialSelectedDateMillis = addEditUIState.dueDate)
+
+    var showDatePickerDialog by remember { mutableStateOf(false) }
+
+    val formattedDate = remember(addEditUIState.dueDate) {
+        SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(addEditUIState.dueDate)
+    }
+    val context = LocalContext.current
+    LaunchedEffect(taskId) {
+        viewModel.loadTask(taskId)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.saveDeleteTaskEvent.collect { event ->
+            when (event) {
+                is SaveDeleteTaskUIEvent.Error -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
+                }
+
+                is SaveDeleteTaskUIEvent.NavigateBack -> {
+                    navigateToTaskScreen()
+                }
+            }
+        }
+    }
+
+    if (showDatePickerDialog) {
+        DatePickerDialog(onDismissRequest = {
+            showDatePickerDialog = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                datePickerState.selectedDateMillis?.let { viewModel.onDueDateUpdate(it) }
+                showDatePickerDialog = false
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePickerDialog = false }) {
+                Text("Cancel")
+            }
+        }) {
+            DatePicker(state = datePickerState)
+        }
+    }
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -120,19 +169,19 @@ fun AddTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "TaskName",
+                    "Task Name",
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = TextSecondary.copy(alpha = 0.5f), fontWeight = FontWeight.Bold
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = taskName,
+                    value = addEditUIState.taskName,
                     modifier = Modifier
                         .fillMaxWidth(),
                     placeholder = { Text("What needs to be done?") },
                     shape = RoundedCornerShape(12.dp),
-                    onValueChange = { taskName = it },
+                    onValueChange = { viewModel.onTaskNameUpdate(it) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = BluePrimary.copy(0.1f),
                         unfocusedContainerColor = BluePrimary.copy(0.05f),
@@ -145,19 +194,19 @@ fun AddTaskScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Description",
+                    "Task Description",
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = TextSecondary.copy(alpha = 0.5f), fontWeight = FontWeight.Bold
                     )
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = taskDescription,
+                    value = addEditUIState.taskDescription,
                     modifier = Modifier
                         .fillMaxWidth(),
                     placeholder = { Text("Add details,subtasks, or links...") },
                     shape = RoundedCornerShape(12.dp),
-                    onValueChange = { taskDescription = it },
+                    onValueChange = { viewModel.onTaskDescriptionUpdate(it) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = BluePrimary.copy(0.1f),
                         unfocusedContainerColor = BluePrimary.copy(0.05f),
@@ -180,8 +229,12 @@ fun AddTaskScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Categories.entries.forEachIndexed { index, categories ->
-                        TaskCategoryChip(categories.title, true)
+                    TaskCategory.entries.forEachIndexed { index, category ->
+                        val isSelected = addEditUIState.category == category
+                        TaskCategoryChip(
+                            category.category,
+                            isSelected,
+                            onClick = { viewModel.onTaskCategoryUpdate(category) })
                     }
                 }
             }
@@ -194,13 +247,24 @@ fun AddTaskScreen(
                         color = TextSecondary.copy(alpha = 0.5f), fontWeight = FontWeight.Bold
                     )
                 )
-                DetailsItem(Icons.Default.CalendarMonth, "Due Date", "Mar 23, 2026", BluePrimary)
-                DetailsItem(Icons.Default.FormatListBulleted, "List", "Other")
+                DetailsItem(
+                    Icons.Default.CalendarMonth,
+                    "Due Date",
+                    formattedDate,
+                    BluePrimary,
+                    onClick = {
+                        showDatePickerDialog = true
+                    }
+                )
+                DetailsItem(
+                    Icons.AutoMirrored.Filled.FormatListBulleted,
+                    "List",
+                    addEditUIState.category.category, onClick = {})
                 DetailsRow(Icons.Outlined.Notifications, "Remind Me") {
                     Switch(
-                        checked = isRemindMeChecked,
+                        checked = addEditUIState.isRemindMe,
                         onCheckedChange = {
-                            isRemindMeChecked = it
+                            viewModel.isRemindMeUpdate()
                         }
                     )
 
@@ -227,9 +291,12 @@ fun AddTaskScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        PriorityButton("Low", true, modifier = Modifier.weight(1f))
-                        PriorityButton("Medium", false, modifier = Modifier.weight(1f))
-                        PriorityButton("High", false, modifier = Modifier.weight(1f))
+                        TaskPriority.entries.forEachIndexed { index, priority ->
+                            val isSelected = addEditUIState.priority == priority
+                            PriorityButton(priority.priority, isSelected, Modifier.weight(1f)) {
+                                viewModel.onPriorityUpdate(priority)
+                            }
+                        }
                     }
                 }
             }
@@ -259,18 +326,30 @@ fun AddTaskScreen(
 
                         if (isTaskEdit) TextButton(
                             onClick = {
+                                val task = Task(
+                                    id = addEditUIState.id!!,
+                                    taskName = addEditUIState.taskName,
+                                    taskDescription = addEditUIState.taskDescription,
+                                    category = addEditUIState.category,
+                                    dueDate = addEditUIState.dueDate,
+                                    isRemindMe = addEditUIState.isRemindMe,
+                                    priority = addEditUIState.priority,
+                                    isCompleted = addEditUIState.isCompleted,
+                                    fileName = addEditUIState.fileName,
+                                    fileLocation = addEditUIState.fileLocation
+                                )
                                 viewModel.deleteTask(task)
                             }
                         ) { Text("Delete Task") }
                         else TextButton(onClick = {
-
+                            viewModel.saveTask()
                         }) {
                             Text(
                                 "Save Task"
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.ArrowForward, contentDescription = "")
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "")
                     }
                 }
             }
@@ -280,25 +359,29 @@ fun AddTaskScreen(
 }
 
 @Composable
-fun TaskCategoryChip(title: String, isSelected: Boolean) {
+fun TaskCategoryChip(title: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.height(40.dp),
         shape = RoundedCornerShape(12.dp),
-        color = BackgroundLight,
-        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder
+        color = if (isSelected) BluePrimary.copy(alpha = 0.4f) else Color.White,
+        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                Icons.Outlined.FormatListBulleted,
+                Icons.AutoMirrored.Outlined.FormatListBulleted,
                 contentDescription = "",
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 title,
-                style = MaterialTheme.typography.labelMedium.copy(color = TextPrimary),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = if (isSelected) BluePrimary else TextSecondary,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                ),
             )
         }
     }
@@ -309,9 +392,10 @@ fun DetailsItem(
     icon: ImageVector,
     detailText: String,
     detailValue: String,
-    valueColor: Color = TextSecondary
+    valueColor: Color = TextSecondary,
+    onClick: () -> Unit
 ) {
-    DetailsRow(icon = icon, detailText = detailText) {
+    DetailsRow(icon = icon, detailText = detailText, onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 color = if (valueColor == BluePrimary) BluePrimary.copy(alpha = 0.5f) else Color.Transparent,
@@ -325,7 +409,7 @@ fun DetailsItem(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
-                Icons.Default.ArrowForward,
+                Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = "Arrow",
                 tint = TextSecondary.copy(alpha = 0.5f),
             )
@@ -337,10 +421,14 @@ fun DetailsItem(
 fun DetailsRow(
     icon: ImageVector,
     detailText: String,
-    trailing: @Composable () -> Unit
-) {
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit),
+
+    ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -373,7 +461,8 @@ fun DetailsRow(
 fun PriorityButton(
     title: String,
     isSelected: Boolean,
-    modifier: Modifier
+    modifier: Modifier,
+    onClick: () -> Unit
 ) {
     Surface(
         color = if (isSelected) BluePrimary else Color.White,
@@ -381,7 +470,8 @@ fun PriorityButton(
         border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
         modifier = modifier
             .height(40.dp)
-            .padding(horizontal = 4.dp)
+            .padding(horizontal = 4.dp),
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp),

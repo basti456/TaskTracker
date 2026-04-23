@@ -26,7 +26,7 @@ data class TaskEntity(
     val dueDate: Long,
 
     @ColumnInfo(name = "IsRemindMe")
-    val isRemindMe: Int,
+    val isRemindMe: Boolean,
 
     @ColumnInfo(name = "Priority")
     val priority: TaskPriority,

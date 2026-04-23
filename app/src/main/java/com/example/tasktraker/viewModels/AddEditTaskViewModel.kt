@@ -43,8 +43,8 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
         _addEditTaskUIState.value = _addEditTaskUIState.value.copy(dueDate = dueDate)
     }
 
-    fun isRemindMeUpdate(isRemindMe: Int) {
-        _addEditTaskUIState.value = _addEditTaskUIState.value.copy(isRemindMe = isRemindMe)
+    fun isRemindMeUpdate() {
+        _addEditTaskUIState.value = _addEditTaskUIState.value.copy(isRemindMe = !(_addEditTaskUIState.value.isRemindMe))
     }
 
     fun onPriorityUpdate(priority: TaskPriority) {

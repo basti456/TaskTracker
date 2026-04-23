@@ -24,7 +24,7 @@ data class Task(
     val taskDescription: String,
     val category: TaskCategory,
     val dueDate: Long,
-    val isRemindMe: Int,
+    val isRemindMe: Boolean,
     val priority: TaskPriority,
     val isCompleted: Boolean,
     val fileName: String,

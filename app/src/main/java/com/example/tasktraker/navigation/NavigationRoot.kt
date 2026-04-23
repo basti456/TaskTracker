@@ -46,7 +46,11 @@ fun NavigationRoot(modifier: Modifier) {
 
                 is Route.TaskDetail -> {
                     NavEntry(key) {
-                        AddTaskScreen()
+                        AddTaskScreen(
+                            navigateToTaskScreen = {
+                                backStack.removeAt(backStack.lastIndex)
+                            }
+                        )
                     }
                 }
 
