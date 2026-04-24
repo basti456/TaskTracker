@@ -1,6 +1,7 @@
 package com.example.tasktraker.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -27,38 +28,40 @@ fun NavigationRoot(modifier: Modifier) {
         },
         Route.TaskList
     )
-    NavDisplay(
-        backStack = backStack,
-        entryProvider = { key ->
-            when (key) {
-                is Route.TaskList -> {
-                    NavEntry(key) {
-                        TaskScreen(
-                            onTaskItemClicked = { taskId ->
-                                println("Task Id $taskId")
-                                backStack.add(Route.TaskDetail(taskId))
-                            },
-                            onAddTaskClicked = {
-                                println("Reached here")
-                                backStack.add(Route.TaskDetail(-1L))
-                            }
-                        )
+    CompositionLocalProvider(LocalNavBackStack provides backStack) {
+        NavDisplay(
+            backStack = backStack,
+            entryProvider = { key ->
+                when (key) {
+                    is Route.TaskList -> {
+                        NavEntry(key) {
+                            TaskScreen(
+                                onTaskItemClicked = { taskId ->
+                                    println("Task Id $taskId")
+                                    backStack.add(Route.TaskDetail(taskId))
+                                },
+                                onAddTaskClicked = {
+                                    println("Reached here")
+                                    backStack.add(Route.TaskDetail(-1L))
+                                }
+                            )
+                        }
                     }
-                }
 
-                is Route.TaskDetail -> {
-                    NavEntry(key) {
-                        AddTaskScreen(
-                            taskId = key.taskId,
-                            navigateToTaskScreen = {
-                                backStack.removeAt(backStack.lastIndex)
-                            }
-                        )
+                    is Route.TaskDetail -> {
+                        NavEntry(key) {
+                            AddTaskScreen(
+                                taskId = key.taskId,
+                                navigateToTaskScreen = {
+                                    backStack.removeAt(backStack.lastIndex)
+                                }
+                            )
+                        }
                     }
-                }
 
-                else -> error("Unknown Navkey")
+                    else -> error("Unknown Navkey")
+                }
             }
-        }
-    )
+        )
+    }
 }

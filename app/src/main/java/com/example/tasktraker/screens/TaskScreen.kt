@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +34,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -50,8 +52,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
+import com.example.tasktraker.navigation.LocalNavBackStack
+import com.example.tasktraker.navigation.Route
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
@@ -63,13 +68,13 @@ import java.util.Locale
 
 
 enum class Destination(
-    val route: String,
+    val route: NavKey,
     val label: String,
     val icon: ImageVector,
     val contentDescription: String
 ) {
-    HOME("home", "Home", Icons.Default.Add, "Home"),
-    ALERTS("alerts", "Alerts", Icons.Default.AddAlert, "Alerts"),
+    HOME(Route.TaskList, "Home", Icons.Default.Add, "Home"),
+    ALERTS(Route.TaskDetail(-1L), "Alerts", Icons.Default.AddAlert, "Alerts"),
 }
 
 @Composable
@@ -83,7 +88,7 @@ fun TaskScreen(
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
     var searchText by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<TaskCategory?>(null) }
-
+    val backStack = LocalNavBackStack.current
 
     val chips = listOf("All", "Work", "Personal", "Shopping", "Health", "Other")
     Scaffold(bottomBar = {
@@ -91,10 +96,15 @@ fun TaskScreen(
             containerColor = Color.White,
             windowInsets = NavigationBarDefaults.windowInsets
         ) {
+            val currentKey = backStack.last()
             Destination.entries.forEachIndexed { index, destination ->
                 NavigationBarItem(
-                    selected = selectedDestination == index,
-                    onClick = { },
+                    selected = currentKey == destination.route,
+                    onClick = {
+                        if (currentKey != destination.route) {
+                            backStack.add(destination.route)
+                        }
+                    },
                     icon = {
                         Icon(
                             destination.icon,
@@ -176,21 +186,39 @@ fun TaskScreen(
                     ChipButton(chips[index], true)
                 }
             }
+            Spacer(modifier = Modifier.height(10.dp))
             when (val state = taskUIState) {
                 is TaskUIState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
 
                 is TaskUIState.Empty -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(56.dp),
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No Tasks Present. Please click + to add")
+                    }
                 }
 
                 is TaskUIState.Error -> {
-                    println(state.message)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Something went wrong. Please try again")
+                    }
                 }
 
                 is TaskUIState.Success -> {
@@ -247,7 +275,9 @@ fun TaskCard(
     onTaskItemClicked: () -> Unit,
     onTaskCheckboxClicked: (Task) -> Unit
 ) {
+
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
+        SwipeToDismissBoxValue.Settled,
         confirmValueChange = {
             if (it == SwipeToDismissBoxValue.EndToStart) {
                 onDelete()
@@ -255,16 +285,34 @@ fun TaskCard(
             } else {
                 false
             }
-        }
+        },
+        SwipeToDismissBoxDefaults.positionalThreshold
     )
     SwipeToDismissBox(
         state = swipeToDismissBoxState,
         modifier = Modifier.fillMaxWidth(),
         backgroundContent = {
+            when (swipeToDismissBoxState.dismissDirection) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Red.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Remove item",
+                            modifier = Modifier.padding(16.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
 
+                else -> {}
+            }
         },
-
-        ) {
+    ) {
         TaskItem(
             task = task,
             onTaskItemClick = onTaskItemClicked,
