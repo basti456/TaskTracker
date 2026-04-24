@@ -2,7 +2,6 @@ package com.example.tasktraker.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tasktraker.databases.entity.toEntity
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.repository.TaskRepository
 import kotlinx.coroutines.flow.SharingStarted

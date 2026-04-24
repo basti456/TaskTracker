@@ -1,6 +1,7 @@
 package com.example.tasktraker.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,7 +63,6 @@ import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
 import com.example.tasktraker.viewModels.AddEditTaskViewModel
 import com.example.tasktraker.viewModels.SaveDeleteTaskUIEvent
-import kotlinx.coroutines.flow.collect
 import org.koin.compose.viewmodel.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -75,6 +75,7 @@ fun AddTaskScreen(
     viewModel: AddEditTaskViewModel = koinViewModel(),
     navigateToTaskScreen: () -> Unit
 ) {
+    println("AddTaskScreen $taskId")
     val isTaskEdit = taskId != -1L
     val addEditUIState by viewModel.addEditTaskUIState.collectAsState()
     val datePickerState =
@@ -153,7 +154,7 @@ fun AddTaskScreen(
                 if (isTaskEdit) {
                     TextButton(
                         onClick = {
-                            navigateToTaskScreen()
+                            viewModel.saveTask()
                         },
                         modifier = Modifier.align(Alignment.CenterEnd),
                     ) {
@@ -318,8 +319,9 @@ fun AddTaskScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(60.dp),
-                color = TextSecondary,
-                shape = RoundedCornerShape(8.dp)
+                color =  Color.White,
+                shape = RoundedCornerShape(8.dp),
+                border = if(isTaskEdit) BorderStroke(2.dp,Color.Red) else BorderStroke(2.dp,TextSecondary)
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -340,12 +342,21 @@ fun AddTaskScreen(
                                 )
                                 viewModel.deleteTask(task)
                             }
-                        ) { Text("Delete Task") }
+                        ) {
+                            Text(
+                                "Delete Task", style = MaterialTheme.typography.labelLarge.copy(
+                                    color = Color.Red, fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                         else TextButton(onClick = {
                             viewModel.saveTask()
                         }) {
                             Text(
-                                "Save Task"
+                                "Save Task", style = MaterialTheme.typography.labelLarge.copy(
+                                    color = TextSecondary, fontWeight = FontWeight.Bold
+                                )
+
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -364,7 +375,7 @@ fun TaskCategoryChip(title: String, isSelected: Boolean, onClick: () -> Unit) {
         modifier = Modifier.height(40.dp),
         shape = RoundedCornerShape(12.dp),
         color = if (isSelected) BluePrimary.copy(alpha = 0.4f) else Color.White,
-        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
+        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder(),
         onClick = onClick
     ) {
         Row(
@@ -467,7 +478,7 @@ fun PriorityButton(
     Surface(
         color = if (isSelected) BluePrimary else Color.White,
         shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
+        border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder(),
         modifier = modifier
             .height(40.dp)
             .padding(horizontal = 4.dp),

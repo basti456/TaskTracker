@@ -35,9 +35,11 @@ fun NavigationRoot(modifier: Modifier) {
                     NavEntry(key) {
                         TaskScreen(
                             onTaskItemClicked = { taskId ->
+                                println("Task Id $taskId")
                                 backStack.add(Route.TaskDetail(taskId))
                             },
                             onAddTaskClicked = {
+                                println("Reached here")
                                 backStack.add(Route.TaskDetail(-1L))
                             }
                         )
@@ -47,6 +49,7 @@ fun NavigationRoot(modifier: Modifier) {
                 is Route.TaskDetail -> {
                     NavEntry(key) {
                         AddTaskScreen(
+                            taskId = key.taskId,
                             navigateToTaskScreen = {
                                 backStack.removeAt(backStack.lastIndex)
                             }

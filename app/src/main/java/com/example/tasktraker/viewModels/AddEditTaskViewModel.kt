@@ -44,7 +44,8 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     }
 
     fun isRemindMeUpdate() {
-        _addEditTaskUIState.value = _addEditTaskUIState.value.copy(isRemindMe = !(_addEditTaskUIState.value.isRemindMe))
+        _addEditTaskUIState.value =
+            _addEditTaskUIState.value.copy(isRemindMe = !(_addEditTaskUIState.value.isRemindMe))
     }
 
     fun onPriorityUpdate(priority: TaskPriority) {
@@ -52,6 +53,7 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     }
 
     fun loadTask(taskId: Long) {
+        _addEditTaskUIState.value = AddEditTaskModal()
         if (taskId == -1L) return
         viewModelScope.launch {
             repository.getTaskById(taskId)?.let { task ->
@@ -73,6 +75,7 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     fun saveTask() {
         viewModelScope.launch {
             val state = _addEditTaskUIState.value
+            println(state)
             val task = Task(
                 id = state.id ?: 0,
                 taskName = state.taskName,

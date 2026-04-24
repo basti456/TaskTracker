@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tasktraker.models.Task
+import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
@@ -81,6 +82,9 @@ fun TaskScreen(
     val startDestination = Destination.HOME
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
     var searchText by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf<TaskCategory?>(null) }
+
+
     val chips = listOf("All", "Work", "Personal", "Shopping", "Health", "Other")
     Scaffold(bottomBar = {
         NavigationBar(
@@ -126,7 +130,10 @@ fun TaskScreen(
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(System.currentTimeMillis()),
+                        SimpleDateFormat(
+                            "MMMM dd, yyyy",
+                            Locale.getDefault()
+                        ).format(System.currentTimeMillis()),
                         style = MaterialTheme.typography.labelMedium.copy(color = TextSecondary)
                     )
                     Text(
@@ -177,11 +184,13 @@ fun TaskScreen(
                 }
 
                 is TaskUIState.Empty -> {
-
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(56.dp),
+                    )
                 }
 
                 is TaskUIState.Error -> {
-
+                    println(state.message)
                 }
 
                 is TaskUIState.Success -> {
@@ -189,6 +198,7 @@ fun TaskScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(state.tasks) { task ->
+                            println("Task Id's are ${task.id}")
                             TaskCard(
                                 task = task,
                                 onDelete = { viewModel.deleteTask(task) },
@@ -234,7 +244,7 @@ fun ChipButton(
 fun TaskCard(
     task: Task,
     onDelete: () -> Unit,
-    onTaskItemClicked: (Task) -> Unit,
+    onTaskItemClicked: () -> Unit,
     onTaskCheckboxClicked: (Task) -> Unit
 ) {
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
@@ -257,8 +267,7 @@ fun TaskCard(
         ) {
         TaskItem(
             task = task,
-            onTaskItemClick =
-                { onTaskItemClicked(task) },
+            onTaskItemClick = onTaskItemClicked,
             onTaskCheckClick = {
                 onTaskCheckboxClicked(task)
             }

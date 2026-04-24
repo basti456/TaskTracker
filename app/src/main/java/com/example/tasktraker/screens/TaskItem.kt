@@ -3,8 +3,11 @@ package com.example.tasktraker.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
@@ -25,14 +28,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tasktraker.models.Task
-import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun TaskItem(
     task: Task,
-    onTaskItemClick: (Task) -> Unit,
+    onTaskItemClick: () -> Unit,
     onTaskCheckClick: () -> Unit,
 
     ) {
@@ -43,13 +47,12 @@ fun TaskItem(
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
-        onClick = { onTaskItemClick(task) }
+        onClick =  onTaskItemClick
     ) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth()
-               ,
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = {
@@ -57,10 +60,12 @@ fun TaskItem(
             }) {
                 Icon(imageVector = Icons.Outlined.Circle, contentDescription = "Task Status")
             }
-            Column(modifier = Modifier.weight(1f)) {
-                Row(horizontalArrangement = Arrangement.SpaceBetween,
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()) {
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
                         task.taskName,
                         style = MaterialTheme.typography.titleMedium.copy(color = TextPrimary)
@@ -85,22 +90,33 @@ fun TaskItem(
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.labelMedium.copy(color = TextPrimary)
                 )
-                Row() {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.AccessTime, "")
+                        Icon(Icons.Outlined.AccessTime, "",modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            task.dueDate.toString(),
+                            SimpleDateFormat(
+                                "MMMM dd, yyyy",
+                                Locale.getDefault()
+                            ).format(task.dueDate),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = TextSecondary.copy(alpha = 0.5f)
                             )
                         )
                     }
+                    Spacer(modifier = Modifier.width(20.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Circle, "")
+                        Icon(
+                            Icons.Default.Circle,
+                            "",
+                            modifier = Modifier.size(8.dp),
+                            tint = task.category.color
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             task.category.category,
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = BluePrimary,
+                                color = task.category.color,
                                 fontWeight = FontWeight.Medium
                             )
                         )
