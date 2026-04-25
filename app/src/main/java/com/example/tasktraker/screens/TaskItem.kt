@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tasktraker.models.Task
+import com.example.tasktraker.ui.theme.BluePrimary
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
@@ -38,8 +40,7 @@ fun TaskItem(
     task: Task,
     onTaskItemClick: () -> Unit,
     onTaskCheckClick: () -> Unit,
-
-    ) {
+) {
 
     Card(
         modifier = Modifier
@@ -47,7 +48,7 @@ fun TaskItem(
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp),
-        onClick =  onTaskItemClick
+        onClick = onTaskItemClick
     ) {
         Row(
             modifier = Modifier
@@ -55,12 +56,21 @@ fun TaskItem(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = {
-                onTaskCheckClick()
-            }) {
-                Icon(imageVector = Icons.Outlined.Circle, contentDescription = "Task Status")
+            IconButton(
+                onClick =
+                    onTaskCheckClick
+            ) {
+                Icon(
+                    imageVector = if (task.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.Circle,
+                    contentDescription = "Toggle Complete",
+                    tint = if (task.isCompleted) BluePrimary else TextSecondary.copy(alpha = 0.3f),
+                    modifier = Modifier.size(24.dp)
+                )
             }
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
@@ -92,7 +102,7 @@ fun TaskItem(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.AccessTime, "",modifier = Modifier.size(16.dp))
+                        Icon(Icons.Outlined.AccessTime, "", modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             SimpleDateFormat(

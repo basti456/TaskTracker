@@ -41,10 +41,8 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,20 +82,17 @@ fun TaskScreen(
     onAddTaskClicked: () -> Unit
 ) {
     val taskUIState by viewModel.uiState.collectAsState()
-    val startDestination = Destination.HOME
-    var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
-    var searchText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<TaskCategory?>(null) }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val taskCategorySelected by viewModel.selectedCategory.collectAsState()
     val backStack = LocalNavBackStack.current
 
-    val chips = listOf("All", "Work", "Personal", "Shopping", "Health", "Other")
     Scaffold(bottomBar = {
         NavigationBar(
             containerColor = Color.White,
             windowInsets = NavigationBarDefaults.windowInsets
         ) {
             val currentKey = backStack.last()
-            Destination.entries.forEachIndexed { index, destination ->
+            Destination.entries.forEach { destination ->
                 NavigationBarItem(
                     selected = currentKey == destination.route,
                     onClick = {
@@ -168,9 +163,9 @@ fun TaskScreen(
             }
             Spacer(modifier = Modifier.height(20.dp))
             OutlinedTextField(
-                value = searchText,
+                value = searchQuery,
                 placeholder = { Text("Search your tasks") },
-                onValueChange = { searchText = it },
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 modifier = Modifier
@@ -182,8 +177,16 @@ fun TaskScreen(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(chips.size) { index ->
-                    ChipButton(chips[index], true)
+                item {
+                    ChipButton("All", taskCategorySelected == null, onCategoryClicked = {
+                        viewModel.onTaskCategoryChanged(null)
+                    })
+                }
+                items(TaskCategory.entries) { taskCategory ->
+                    ChipButton(
+                        taskCategory.category,
+                        isSelected = taskCategorySelected == taskCategory,
+                        { viewModel.onTaskCategoryChanged(taskCategory) })
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -245,13 +248,15 @@ fun TaskScreen(
 @Composable
 fun ChipButton(
     title: String,
-    isSelected: Boolean
+    isSelected: Boolean,
+    onCategoryClicked: () -> Unit
 ) {
     Surface(
         color = if (isSelected) BluePrimary else Color.White,
         shape = RoundedCornerShape(12.dp),
         border = if (isSelected) null else ButtonDefaults.outlinedButtonBorder,
-        modifier = Modifier.height(40.dp)
+        modifier = Modifier.height(40.dp),
+        onClick = onCategoryClicked
     ) {
         Box(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -273,7 +278,7 @@ fun TaskCard(
     task: Task,
     onDelete: () -> Unit,
     onTaskItemClicked: () -> Unit,
-    onTaskCheckboxClicked: (Task) -> Unit
+    onTaskCheckboxClicked: () -> Unit
 ) {
 
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
@@ -316,9 +321,7 @@ fun TaskCard(
         TaskItem(
             task = task,
             onTaskItemClick = onTaskItemClicked,
-            onTaskCheckClick = {
-                onTaskCheckboxClicked(task)
-            }
+            onTaskCheckClick = onTaskCheckboxClicked
         )
     }
 }
