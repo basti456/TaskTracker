@@ -63,6 +63,6 @@ fun Task.toEntity(): TaskEntity = TaskEntity(
     isRemindMe = isRemindMe,
     priority = priority,
     isCompleted = isCompleted,
-    fileName = fileName,
-    fileLocation = fileLocation
+    fileName = fileName?:"",
+    fileLocation = fileLocation?:""
 )

@@ -1,6 +1,9 @@
 package com.example.tasktraker.screens
 
+import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -87,6 +90,19 @@ fun AddTaskScreen(
         SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(addEditUIState.dueDate)
     }
     val context = LocalContext.current
+
+    val filePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                viewModel.onFileUriUpdate(it.toString())
+                viewModel.onFileNameUpdate(getFileName(context, it))
+            }
+
+        }
     LaunchedEffect(taskId) {
         viewModel.loadTask(taskId)
     }
@@ -301,7 +317,12 @@ fun AddTaskScreen(
                     }
                 }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(
+                    onClick = {
+                        filePickerLauncher.launch(arrayOf("*/*"))
+                    }
+                )) {
                 Icon(
                     Icons.Outlined.AttachFile,
                     tint = TextPrimary.copy(alpha = 0.5f),
@@ -309,7 +330,7 @@ fun AddTaskScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Add Attachment",
+                    if (addEditUIState.fileName == null) "Add Attachment" else addEditUIState.fileName.toString(),
                     style = MaterialTheme.typography.labelLarge.copy(
                         color = TextPrimary.copy(alpha = 0.5f), fontWeight = FontWeight.Bold
                     )
@@ -319,9 +340,12 @@ fun AddTaskScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .size(60.dp),
-                color =  Color.White,
+                color = Color.White,
                 shape = RoundedCornerShape(8.dp),
-                border = if(isTaskEdit) BorderStroke(2.dp,Color.Red) else BorderStroke(2.dp,TextSecondary)
+                border = if (isTaskEdit) BorderStroke(2.dp, Color.Red) else BorderStroke(
+                    2.dp,
+                    TextSecondary
+                )
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -337,8 +361,8 @@ fun AddTaskScreen(
                                     isRemindMe = addEditUIState.isRemindMe,
                                     priority = addEditUIState.priority,
                                     isCompleted = addEditUIState.isCompleted,
-                                    fileName = addEditUIState.fileName,
-                                    fileLocation = addEditUIState.fileLocation
+                                    fileName = addEditUIState.fileName?:"",
+                                    fileLocation = addEditUIState.fileLocation?:""
                                 )
                                 viewModel.deleteTask(task)
                             }

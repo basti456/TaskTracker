@@ -1,5 +1,6 @@
 package com.example.tasktraker.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ fun TaskItem(
     task: Task,
     onTaskItemClick: () -> Unit,
     onTaskCheckClick: () -> Unit,
+    onTaskAttachmentClicked: () -> Unit,
 ) {
 
     Card(
@@ -128,6 +131,17 @@ fun TaskItem(
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = task.category.color,
                                 fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                    if(task.fileLocation != ""){
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            Icons.Outlined.FileOpen,
+                            tint = TextPrimary.copy(alpha = 0.5f),
+                            contentDescription = "File Attachment",
+                            modifier = Modifier.size(24.dp).clickable(
+                                onClick = onTaskAttachmentClicked
                             )
                         )
                     }

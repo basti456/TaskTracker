@@ -52,6 +52,14 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
         _addEditTaskUIState.value = _addEditTaskUIState.value.copy(priority = priority)
     }
 
+    fun onFileUriUpdate(fileUri: String?) {
+        _addEditTaskUIState.value = _addEditTaskUIState.value.copy(fileLocation = fileUri)
+    }
+
+    fun onFileNameUpdate(fileName: String?) {
+        _addEditTaskUIState.value = _addEditTaskUIState.value.copy(fileName = fileName)
+    }
+
     fun loadTask(taskId: Long) {
         _addEditTaskUIState.value = AddEditTaskModal()
         if (taskId == -1L) return
@@ -75,7 +83,6 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     fun saveTask() {
         viewModelScope.launch {
             val state = _addEditTaskUIState.value
-            println(state)
             val task = Task(
                 id = state.id ?: 0,
                 taskName = state.taskName,
@@ -85,8 +92,8 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
                 isRemindMe = state.isRemindMe,
                 priority = state.priority,
                 isCompleted = state.isCompleted,
-                fileName = state.fileName,
-                fileLocation = state.fileLocation
+                fileName = state.fileName?:"",
+                fileLocation = state.fileLocation?:""
             )
             try {
                 if (state.id == null) {

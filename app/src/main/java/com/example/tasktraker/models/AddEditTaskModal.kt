@@ -12,6 +12,6 @@ data class AddEditTaskModal(
     val isRemindMe: Boolean = false,
     val isCompleted: Boolean = false,
     val priority: TaskPriority = TaskPriority.LOW,
-    val fileName: String = "",
-    val fileLocation: String = ""
+    val fileName: String? = null,
+    val fileLocation: String? = null
 )

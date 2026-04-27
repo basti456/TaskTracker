@@ -27,7 +27,7 @@ data class Task(
     val isRemindMe: Boolean,
     val priority: TaskPriority,
     val isCompleted: Boolean,
-    val fileName: String,
-    val fileLocation: String
+    val fileName: String?,
+    val fileLocation: String?
 )
 

@@ -1,5 +1,11 @@
 package com.example.tasktraker.screens
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,13 +47,11 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
@@ -63,6 +67,7 @@ import com.example.tasktraker.viewModels.TaskViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.core.net.toUri
 
 
 enum class Destination(
@@ -85,7 +90,7 @@ fun TaskScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val taskCategorySelected by viewModel.selectedCategory.collectAsState()
     val backStack = LocalNavBackStack.current
-
+    val context = LocalContext.current
     Scaffold(bottomBar = {
         NavigationBar(
             containerColor = Color.White,
@@ -185,8 +190,8 @@ fun TaskScreen(
                 items(TaskCategory.entries) { taskCategory ->
                     ChipButton(
                         taskCategory.category,
-                        isSelected = taskCategorySelected == taskCategory,
-                        { viewModel.onTaskCategoryChanged(taskCategory) })
+                        isSelected = taskCategorySelected == taskCategory
+                    ) { viewModel.onTaskCategoryChanged(taskCategory) }
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -234,6 +239,10 @@ fun TaskScreen(
                                 task = task,
                                 onDelete = { viewModel.deleteTask(task) },
                                 onTaskItemClicked = { onTaskItemClicked(task.id) },
+                                onTaskAttachmentClicked = {
+                                    val uri = task.fileLocation!!.toUri()
+                                    openAttachment(context, uri)
+                                },
                                 onTaskCheckboxClicked = { viewModel.toggleTaskCompletion(task) }
                             )
                         }
@@ -278,7 +287,8 @@ fun TaskCard(
     task: Task,
     onDelete: () -> Unit,
     onTaskItemClicked: () -> Unit,
-    onTaskCheckboxClicked: () -> Unit
+    onTaskCheckboxClicked: () -> Unit,
+    onTaskAttachmentClicked: () -> Unit
 ) {
 
     val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
@@ -321,7 +331,32 @@ fun TaskCard(
         TaskItem(
             task = task,
             onTaskItemClick = onTaskItemClicked,
-            onTaskCheckClick = onTaskCheckboxClicked
+            onTaskCheckClick = onTaskCheckboxClicked,
+            onTaskAttachmentClicked = onTaskAttachmentClicked
         )
     }
+}
+
+fun getFileName(context: Context, uri: Uri): String {
+    var name = "attachment"
+    context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+        if (cursor.moveToFirst()) {
+            val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (index != -1) name = cursor.getString(index)
+        }
+    }
+    return name
+}
+
+fun openAttachment(context: Context, uri: Uri?) {
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, context.contentResolver.getType(uri!!))
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    try {
+        context.startActivity(Intent.createChooser(intent, "Open with"))
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
+    }
+
 }
