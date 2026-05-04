@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +26,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +48,8 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -54,12 +61,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavKey
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.navigation.LocalNavBackStack
 import com.example.tasktraker.navigation.Route
 import com.example.tasktraker.ui.theme.BluePrimary
+import com.example.tasktraker.ui.theme.LocalIsDarkTheme
+import com.example.tasktraker.ui.theme.LocalToggleTheme
 import com.example.tasktraker.ui.theme.TextPrimary
 import com.example.tasktraker.ui.theme.TextSecondary
 import com.example.tasktraker.viewModels.TaskUIState
@@ -67,7 +77,6 @@ import com.example.tasktraker.viewModels.TaskViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
-import androidx.core.net.toUri
 
 
 enum class Destination(
@@ -80,6 +89,7 @@ enum class Destination(
     ALERTS(Route.TaskDetail(-1L), "Alerts", Icons.Default.AddAlert, "Alerts"),
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(
     viewModel: TaskViewModel = koinViewModel(),
@@ -91,6 +101,8 @@ fun TaskScreen(
     val taskCategorySelected by viewModel.selectedCategory.collectAsState()
     val backStack = LocalNavBackStack.current
     val context = LocalContext.current
+    val isDark = LocalIsDarkTheme.current
+    val toggleTheme = LocalToggleTheme.current
     Scaffold(bottomBar = {
         NavigationBar(
             containerColor = Color.White,
@@ -125,6 +137,27 @@ fun TaskScreen(
         ) {
             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Task")
         }
+    }, topBar = {
+        TopAppBar(
+            title = { Text("TaskTracker") }, colors = TopAppBarColors(
+                containerColor = Color(0xFFE3F2FD),
+                scrolledContainerColor = TextPrimary,
+                navigationIconContentColor = TextSecondary,
+                titleContentColor = TextPrimary,
+                actionIconContentColor = TextPrimary
+            ),
+            actions = {
+                Icon(
+                    if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
+                    contentDescription = "Theme",
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .clickable(
+                            onClick = toggleTheme
+                        ),
+                )
+            }
+        )
     }) { innerPadding ->
         Column(
             modifier = Modifier

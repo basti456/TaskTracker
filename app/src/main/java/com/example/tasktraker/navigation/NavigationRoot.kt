@@ -37,11 +37,9 @@ fun NavigationRoot(modifier: Modifier) {
                         NavEntry(key) {
                             TaskScreen(
                                 onTaskItemClicked = { taskId ->
-                                    println("Task Id $taskId")
                                     backStack.add(Route.TaskDetail(taskId))
                                 },
                                 onAddTaskClicked = {
-                                    println("Reached here")
                                     backStack.add(Route.TaskDetail(-1L))
                                 }
                             )
