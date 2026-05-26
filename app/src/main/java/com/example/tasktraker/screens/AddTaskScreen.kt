@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.models.TaskPriority
@@ -80,7 +81,7 @@ fun AddTaskScreen(
 ) {
     println("AddTaskScreen $taskId")
     val isTaskEdit = taskId != -1L
-    val addEditUIState by viewModel.addEditTaskUIState.collectAsState()
+    val addEditUIState by viewModel.addEditTaskUIState.collectAsStateWithLifecycle()
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = addEditUIState.dueDate)
 

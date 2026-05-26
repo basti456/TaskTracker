@@ -61,7 +61,6 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     }
 
     fun loadTask(taskId: Long) {
-        _addEditTaskUIState.value = AddEditTaskModal()
         if (taskId == -1L) return
         viewModelScope.launch {
             repository.getTaskById(taskId)?.let { task ->

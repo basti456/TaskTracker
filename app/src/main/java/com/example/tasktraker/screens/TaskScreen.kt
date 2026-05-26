@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,6 +61,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
@@ -96,9 +96,9 @@ fun TaskScreen(
     onTaskItemClicked: (Long) -> Unit,
     onAddTaskClicked: () -> Unit
 ) {
-    val taskUIState by viewModel.uiState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val taskCategorySelected by viewModel.selectedCategory.collectAsState()
+    val taskUIState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val taskCategorySelected by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val backStack = LocalNavBackStack.current
     val context = LocalContext.current
     val isDark = LocalIsDarkTheme.current
