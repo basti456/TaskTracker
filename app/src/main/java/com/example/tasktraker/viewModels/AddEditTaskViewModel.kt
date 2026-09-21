@@ -2,6 +2,7 @@ package com.example.tasktraker.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tasktraker.alarms.TaskAlarmManager
 import com.example.tasktraker.models.AddEditTaskModal
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
@@ -18,7 +19,10 @@ sealed class SaveDeleteTaskUIEvent {
     data class Error(val message: String) : SaveDeleteTaskUIEvent()
 }
 
-class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel() {
+class AddEditTaskViewModel(
+    private val repository: TaskRepository,
+    private val taskAlarmManager: TaskAlarmManager
+) : ViewModel() {
 
     private val _addEditTaskUIState = MutableStateFlow(AddEditTaskModal())
     val addEditTaskUIState = _addEditTaskUIState.asStateFlow()
@@ -61,7 +65,10 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
     }
 
     fun loadTask(taskId: Long) {
-        if (taskId == -1L) return
+        if (taskId == -1L) {
+            _addEditTaskUIState.value = AddEditTaskModal()
+            return
+        }
         viewModelScope.launch {
             repository.getTaskById(taskId)?.let { task ->
                 _addEditTaskUIState.value = AddEditTaskModal(
@@ -77,6 +84,10 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
                 )
             }
         }
+    }
+
+    fun canScheduleExactAlarms(): Boolean {
+        return taskAlarmManager.canScheduleExactAlarms()
     }
 
     fun saveTask() {
@@ -96,9 +107,11 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
             )
             try {
                 if (state.id == null) {
-                    repository.insertTask(task)
+                    val newId = repository.insertTask(task)
+                    taskAlarmManager.scheduleTaskAlarm(task.copy(id = newId))
                 } else {
                     repository.updateTask(task)
+                    taskAlarmManager.scheduleTaskAlarm(task)
                 }
                 _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.NavigateBack)
             } catch (e: Exception) {
@@ -111,6 +124,7 @@ class AddEditTaskViewModel(private val repository: TaskRepository) : ViewModel()
         viewModelScope.launch {
             try {
                 repository.deleteTask(task)
+                taskAlarmManager.cancelTaskAlarm(task)
                 _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.NavigateBack)
             } catch (e: Exception) {
                 _saveDeleteTaskEvent.emit(SaveDeleteTaskUIEvent.Error("Something went wrong. Try Again ${e.message}"))

@@ -1,6 +1,9 @@
 package com.example.tasktraker.di
 
 import androidx.room.Room
+import com.example.tasktraker.alarms.AlarmScheduler
+import com.example.tasktraker.alarms.AndroidAlarmScheduler
+import com.example.tasktraker.alarms.TaskAlarmManager
 import com.example.tasktraker.databases.TaskDatabase
 import com.example.tasktraker.repository.TaskRepository
 import com.example.tasktraker.viewModels.AddEditTaskViewModel
@@ -10,6 +13,9 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val databaseModule = module {
+
+    single<AlarmScheduler> { AndroidAlarmScheduler(androidContext()) }
+    single { TaskAlarmManager(androidContext(), get()) }
 
     // 🔹 Create a SINGLE instance of Room database
     // - androidContext() → provided by Koin (Application context)
@@ -43,10 +49,10 @@ val databaseModule = module {
     // - viewModel {} → lifecycle-aware (NOT singleton)
     // - get() → injects TaskRepository
     // 👉 New instance created per scope (Activity/NavGraph)
-    viewModel { TaskViewModel(get()) }
+    viewModel { TaskViewModel(get(), get()) }
 
     // 🔹 ViewModel for add/edit screen
     // - also gets TaskRepository
     // 👉 Separate ViewModel for different screen logic
-    viewModel { AddEditTaskViewModel(get()) }
+    viewModel { AddEditTaskViewModel(get(), get()) }
 }

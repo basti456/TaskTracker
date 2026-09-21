@@ -2,6 +2,7 @@ package com.example.tasktraker
 
 import android.app.Application
 import com.example.tasktraker.di.databaseModule
+import com.example.tasktraker.notifications.NotificationHelper
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
@@ -12,5 +13,6 @@ class TaskTrackerApplication : Application() {
             androidContext(this@TaskTrackerApplication)
             modules(databaseModule)
         }
+        NotificationHelper(this).createNotificationChannel()
     }
 }

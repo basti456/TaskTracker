@@ -9,9 +9,7 @@ plugins {
 android {
     namespace = "com.example.tasktraker"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
 
@@ -19,7 +17,7 @@ android {
     defaultConfig {
         applicationId = "com.example.tasktraker"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+
+    <!-- Card Background -->
+    <path
+        android:pathData="M6,4h20c2.2,0 4,1.8 4,4v16c0,2.2 -1.8,4 -4,4H6c-2.2,0 -4,-1.8 -4,-4V8c0,-2.2 1.8,-4 4,-4z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="2"
+                android:startY="4"
+                android:endX="30"
+                android:endY="28"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#2563EB" />
+                <item android:offset="1.0" android:color="#4F46E5" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Top Accent Bar -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M6,4h20c2.2,0 4,1.8 4,4v2H2V8c0,-2.2 1.8,-4 4,-4z" />
+
+    <!-- Checkmark Circle -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M9,16m-3.5,0a3.5,3.5 0 1,0 7,0a3.5,3.5 0 1,0 -7,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7.8,16l0.8,0.8l1.8,-1.8l0.6,0.6l-2.4,2.4l-1.4,-1.4z" />
+
+    <!-- Line 1 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M15,15h10c0.55,0 1,0.45 1,1v0c0,0.55 -0.45,1 -1,1H15c-0.55,0 -1,-0.45 -1,-1v0c0,-0.55 0.45,-1 1,-1z" />
+
+    <!-- Checkmark Circle 2 -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M9,22m-3.5,0a3.5,3.5 0 1,0 7,0a3.5,3.5 0 1,0 -7,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7.8,22l0.8,0.8l1.8,-1.8l0.6,0.6l-2.4,2.4l-1.4,-1.4z" />
+
+    <!-- Line 2 -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M15,21h7c0.55,0 1,0.45 1,1v0c0,0.55 -0.45,1 -1,1H15c-0.55,0 -1,-0.45 -1,-1v0c0,-0.55 0.45,-1 1,-1z" />
+</vector>

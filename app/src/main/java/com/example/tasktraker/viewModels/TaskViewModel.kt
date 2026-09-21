@@ -2,6 +2,7 @@ package com.example.tasktraker.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tasktraker.alarms.TaskAlarmManager
 import com.example.tasktraker.models.Task
 import com.example.tasktraker.models.TaskCategory
 import com.example.tasktraker.repository.TaskRepository
@@ -21,7 +22,10 @@ sealed class TaskUIState {
     data class Error(val message: String) : TaskUIState()
 }
 
-class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
+class TaskViewModel(
+    private val repository: TaskRepository,
+    private val taskAlarmManager: TaskAlarmManager
+) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     private val _selectedCategory = MutableStateFlow<TaskCategory?>(null)
 
@@ -66,15 +70,17 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     fun toggleTaskCompletion(task: Task) {
         viewModelScope.launch {
-            repository.updateTask(task.copy(isCompleted = !(task.isCompleted)))
+            val updatedTask = task.copy(isCompleted = !task.isCompleted)
+            repository.updateTask(updatedTask)
+            taskAlarmManager.scheduleTaskAlarm(updatedTask)
         }
     }
 
     fun deleteTask(task: Task) {
         viewModelScope.launch {
             repository.deleteTask(task)
+            taskAlarmManager.cancelTaskAlarm(task)
         }
-
     }
 
 }
