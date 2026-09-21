@@ -23,13 +23,16 @@ A modern, efficient, and beautifully designed task management application for An
 - **[Material 3](https://m3.material.io/)**: Adhering to the latest Material Design guidelines for a modern look and feel.
 
 ## 📸 Screenshots
+<table>
+  <tr>
+<td><img width="200"  alt="Screenshot_20260921_213555" src="https://github.com/user-attachments/assets/99e36399-2615-47dc-9683-431915732f4b" />
+<td><img width="200" alt="Screenshot_20260921_213840" src="https://github.com/user-attachments/assets/4b4114d8-1fde-4a95-b8ae-db0de46b4b8e" />
+<td><img width="200"  alt="Screenshot_20260921_213855" src="https://github.com/user-attachments/assets/1cb4e21f-b127-4483-bc83-dda40d74adda" />
+<td><img width="200"   alt="Screenshot_20260921_213949" src="https://github.com/user-attachments/assets/8b2e6215-cac5-4f71-93e3-02b14e011c97" />
+<td><img width="200"  alt="Screenshot_20260921_214241" src="https://github.com/user-attachments/assets/7917a745-b085-40ca-8822-9f7d6f9b652f" />
+  </tr>
+</table>
 
-| Task List | Add Task | Dark Mode |
-| :---: | :---: | :---: |
-| ![Task List Screen](https://via.placeholder.com/200x400?text=Task+List) | ![Add Task Screen](https://via.placeholder.com/200x400?text=Add+Task) | ![Dark Mode Screen](https://via.placeholder.com/200x400?text=Dark+Mode) |
-
-> [!TIP]
-> Replace the placeholder images above with actual screenshots of your app by adding them to the `/screenshots` folder!
 
 ## 🚀 Getting Started
 
