@@ -52,6 +52,40 @@ A modern, efficient, and beautifully designed task management application for An
 3. Sync Project with Gradle Files.
 4. Run the app on your emulator or physical device.
 
+## ⚙️ CI/CD & Release Builds
+
+This project uses **GitHub Actions** for automated build and release workflows ([.github/workflows/android.yml](.github/workflows/android.yml)).
+
+On every push to `main` or manual workflow trigger, GitHub Actions compiles signed **Release APKs** and **Android App Bundles (AAB)** and uploads them as workflow artifacts.
+
+### Setting Up GitHub Repository Secrets
+
+To enable signed release builds in GitHub Actions, configure the following secrets in your GitHub repository under **Settings > Secrets and variables > Actions**:
+
+| Secret Name | Description |
+| :--- | :--- |
+| `KEYSTORE_BASE64` | Base64-encoded string of your release `.jks` keystore file |
+| `KEYSTORE_PASSWORD` | Password for your release keystore |
+| `KEY_ALIAS` | Alias name for your key |
+| `KEY_PASSWORD` | Password for your key alias |
+
+> **Note:** Do not commit `release.jks` or keystore credentials to version control. The CI pipeline dynamically decodes the keystore string onto the runner during execution.
+
+### Building Locally
+
+- **Debug Build:**
+  ```bash
+  ./gradlew assembleDebug
+  ```
+- **Release Build:**
+  Place `release.jks` in the root folder and set local environment variables before running:
+  ```bash
+  export KEYSTORE_PASSWORD="your_keystore_password"
+  export KEY_ALIAS="your_key_alias"
+  export KEY_PASSWORD="your_key_password"
+  ./gradlew assembleRelease
+  ```
+
 ## 📁 Project Structure
 
 ```text

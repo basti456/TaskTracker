@@ -1,25 +1,28 @@
 package com.example.tasktraker.notifications
 
-import android.R as R
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.example.tasktraker.MainActivity
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
+import com.example.tasktraker.MainActivity
+import com.example.tasktraker.R
 
 class NotificationHelper(private val context: Context) {
 
     companion object {
-        const val CHANNEL_ID = "task_deadline_channel_v4" // Force fresh channel for persistent alarm
-        const val CHANNEL_NAME = "Task Deadlines (Urgent)"
+        const val CHANNEL_ID = "task_deadline_channel_v5"
+        const val CHANNEL_NAME = "Task Deadlines & Reminders"
     }
 
     fun createNotificationChannel() {
@@ -35,12 +38,12 @@ class NotificationHelper(private val context: Context) {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Urgent alerts for task deadlines that ring until dismissed"
+                description = "Urgent deadline alerts for TaskTracker tasks"
                 setSound(soundUri, audioAttributes)
                 enableLights(true)
-                lightColor = Color.RED
+                lightColor = Color.BLUE
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0, 1000, 500, 1000)
+                vibrationPattern = longArrayOf(0, 800, 400, 800)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 setBypassDnd(true)
             }
@@ -54,7 +57,7 @@ class NotificationHelper(private val context: Context) {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("TASK_ID", taskId)
         }
-        
+
         val pendingIntent = PendingIntent.getActivity(
             context,
             taskId.toInt(),
@@ -85,26 +88,31 @@ class NotificationHelper(private val context: Context) {
         )
 
         val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val largeIcon = getAppLogoBitmap()
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("Deadline: $title")
+            .setSmallIcon(R.drawable.ic_notification)
+            .setLargeIcon(largeIcon)
+            .setContentTitle("⏰ $title")
             .setContentText(content)
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText("$content\n\nThis task is due now. Please complete or dismiss this alert.")
-                .setBigContentTitle("Deadline Reached!")
+            .setSubText("TaskTracker Reminder")
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .setBigContentTitle("⏰ Task Deadline Reached!")
+                    .bigText("📌 Task: $content\n\nThis scheduled task is due now. Mark it complete or dismiss the alert below.")
+                    .setSummaryText("TaskTracker Alert")
             )
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setSound(soundUri)
-            .setVibrate(longArrayOf(0, 1000, 500, 1000))
+            .setVibrate(longArrayOf(0, 800, 400, 800))
             .setFullScreenIntent(pendingIntent, true)
-            .setOngoing(true) 
-            .setAutoCancel(false) 
+            .setOngoing(true)
+            .setAutoCancel(false)
             .setLocalOnly(true)
-            .addAction(R.drawable.ic_menu_save, "Complete Task", donePendingIntent)
-            .addAction(R.drawable.ic_menu_close_clear_cancel, "Stop Alarm", dismissPendingIntent)
-            .setColor("#D32F2F".toColorInt())
+            .addAction(R.drawable.ic_check_circle, "Mark Complete", donePendingIntent)
+            .addAction(R.drawable.ic_alarm_off, "Stop Alarm", dismissPendingIntent)
+            .setColor("#2563EB".toColorInt())
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
         val notification = builder.build()
@@ -112,5 +120,22 @@ class NotificationHelper(private val context: Context) {
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(taskId.toInt(), notification)
+    }
+
+    private fun getAppLogoBitmap(): Bitmap? {
+        return try {
+            val drawable = ContextCompat.getDrawable(context, R.drawable.ic_app_logo) ?: return null
+            val bitmap = Bitmap.createBitmap(
+                if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 128,
+                if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 128,
+                Bitmap.Config.ARGB_8888
+            )
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            bitmap
+        } catch (e: Exception) {
+            null
+        }
     }
 }
